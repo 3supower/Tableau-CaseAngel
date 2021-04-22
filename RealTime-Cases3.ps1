@@ -536,6 +536,7 @@ function update_sheet {
         
         # Category
         $sheet.Cells.Item($i, $header['Category__c']) = $row.Category__c
+        <#
         if ($row.Category__c -eq "Data Connectivity") {
             $sheet.Cells.Item($i, $header['Category__c']).Interior.ColorIndex = 15
         } elseif ($row.Category__c -eq "Licensing") {
