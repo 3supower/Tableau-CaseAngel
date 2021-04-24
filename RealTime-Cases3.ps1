@@ -1,29 +1,11 @@
 ## Console output encoding
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-## Excel Cell Alignments
-$xlConstants = "microsoft.office.interop.excel.Constants" -as [type]
-# $xlConstants::xlCenter
-# $xlConstants::xlDistributed
-# $xlConstants::xlJustify
-# $xlConstants::xlLeft
-# $xlConstants::xlRight
-# OR
-# xlHAlignCenter	-4108	Center.
-# xlHAlignCenterAcrossSelection	7	Center across selection.
-# xlHAlignDistributed	-4117	Distribute.
-# xlHAlignFill	5	Fill.
-# xlHAlignGeneral	1	Align according to data type.
-# xlHAlignJustify	-4130	Justify.
-# xlHAlignLeft	-4131	Left.
-# xlHAlignRight	-4152	Right.
-
 ## Variables
 $user =           $env:USERNAME
 $sp_path =        "C:\Users\$user\Tableau Software Inc\APAC Tech Support - Documents" # SharePoint Local folder path
 $file_name =      "APACTechSupRealTimeDashboard.xlsx"
 $sfile =          "$sp_path\$file_name" # SharePoint local Path 
-$CacheLocation = "C:\Users\$env:USERNAME\AppData\Local\Microsoft\Office\16.0\OfficeFileCache1"
 
 ## SharePoint (Online) ## 
 $sp_root =   "https://tableau.sharepoint.com/sites/APACTechSupport/Shared%20Documents"
@@ -96,7 +78,7 @@ function get-all {
         
         $json_result = (sfdx force:data:soql:query -q $Query -u vscodeOrg --json)
         
-    } While (($json_result -eq $null) -or ($json_result -eq $false))
+    } While (($null -eq $json_result) -or ($json_result -eq $false))
 
     Write-Host "Query Finished" -ForegroundColor Yellow
     # $totalRecordNumber = $json_result.
@@ -104,7 +86,7 @@ function get-all {
     $raw_obj = ($json_result | ConvertFrom-Json).result.records
     $new_obj = @()
 
-    $raw_obj | % {
+    $raw_obj | ForEach-Object {
 
         # Add CSM Property in the PSCustomObject = results set
         $_ | Add-Member -MemberType NoteProperty -Name "CSM" -Value $null
@@ -124,7 +106,7 @@ function get-all {
         }
         #>
 
-        if ($_.Account.CSM_Name__c -ne $null) {
+        if ($null -ne $_.Account.CSM_Name__c) {
             # Write-Host $_.Account.AnnualRevenue
             # Write-Host $_.Account.frmtAmnt
             # Write-Host $_.Account.cnvAmnt
@@ -134,7 +116,7 @@ function get-all {
         }
         
         # Changed owner Today
-        if ($_.Histories.records -ne $null) {
+        if ($null -ne $_.Histories.records) {
             $_.Histories = "YES"
         }
 
@@ -160,7 +142,7 @@ function get-all {
     }
 
     #Filter the new object to keep the cases unassigned or assigned to somebody TODAY only.
-    $new_obj = ($new_obj | ? { ($_.Case_Owner_Name__c -eq $null) -or (  ($_.Case_Owner_Name__c -ne $null) -and ($_.Histories -eq "YES") ) })
+    $new_obj = ($new_obj | Where-Object { ($_.Case_Owner_Name__c -eq $null) -or (  ($_.Case_Owner_Name__c -ne $null) -and ($_.Histories -eq "YES") ) })
 
     return $new_obj
 }
