@@ -484,6 +484,20 @@ function update_sheet {
         } elseif ($row.First_Response_Complete__c -eq $false) {
             # $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = "no"
             # $sheet.Cells.Item($i, 4).Font.ColorIndex = 16 #Grey
+
+            if ( (($row.Priority -eq 'P1') -and ( ($row.Case_Age__c -ge 6) -and ($row.Case_Age__c -le 8) )) -or (($row.Priority -eq 'P2') -and ( ($row.Case_Age__c -ge 20) -and ($row.Case_Age__c -le 24) )) ) {
+                $sheet.Range("A$i","O$i").interior.colorindex = 27
+                $sheet.Cells.Item($i, $header['First_Response_Complete__c']).Font.Bold = $true
+                $sheet.Cells.Item($i, $header['First_Response_Complete__c']).Font.ColorIndex = 3 # Red
+            }
+
+            if ( ( ($row.Priority -eq 'P1') -and ($row.Case_Age__c -gt 8) ) -or ( ($row.Priority -eq 'P2') -and ($row.Case_Age__c -gt 24) ) ) {
+                $sheet.Range("A$i","O$i").interior.colorindex = 38
+                $sheet.Cells.Item($i, $header['First_Response_Complete__c']).Font.Bold = $true
+                $sheet.Cells.Item($i, $header['First_Response_Complete__c']).Font.ColorIndex = 3 # Red
+                $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = "NO"
+            }
+
         } else {
             $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = $row.First_Response_Complete__c
         }
@@ -627,7 +641,9 @@ function update_sheet {
         # $sheet.Cells.Item($i, $header['Account.ARR']) = $row.Account.cnvAmnt
         # $sheet.Cells.Item($i, $header['Account.ARR']) = $row.Account.frmtAmnt
 
+        
         # Validating FR
+        <#
         # $r = "A"+$i+":C"+$i
         try {
             Write-Host $row.casemilestones.records.TimeRemainingInHrs
@@ -635,6 +651,7 @@ function update_sheet {
         } catch {
             $hr = $null
         }
+
         if ( ($row.Priority -eq 'P1') -and ($row.First_Response_Complete__c -eq $false) ) {
             # Write-Host $r
             $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = $row.casemilestones.records.TimeRemainingInHrs
@@ -660,7 +677,6 @@ function update_sheet {
             # $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = $row.casemilestones.records.TimeRemainingInHrs
         }
         
-        
         if ( ($row.Priority -eq 'P1') -and ($row.First_Response_Complete__c -eq $false) -and ($row.casemilestones.records.IsViolated -eq $true) ) {
             # Write-Host $r
             $sheet.Range("A$i","O$i").interior.colorindex = 38
@@ -678,6 +694,7 @@ function update_sheet {
             # $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = $row.casemilestones.records.TimeRemainingInHrs
             # $sheet.Cells.Item($i, $header['First_Response_Complete__c']) = $hr
         }
+        #>
 
         # Entitlement
         if ( ($row.Entitlement_Type__c -match "Premium") -or ($row.Entitlement_Type__c -eq "Elite") -or ($row.Entitlement_Type__c -eq "Extended") ) {
@@ -843,7 +860,7 @@ function Run-MainLoop {
 
     # Timeout for restarting Excel as Excel get buggy after running for long time
     # $timeout = New-TimeSpan -Days 7
-    $timeout = New-TimeSpan -Minutes 600 # 5 hours
+    $timeout = New-TimeSpan -Hours 600
 
     while ($true) {
         # Remove-Cache -Path $CacheLocation
