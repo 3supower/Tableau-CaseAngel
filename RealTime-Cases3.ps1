@@ -150,12 +150,12 @@ function get-all {
 
 function filter-oldp3p4 {
     param($In)
-    return ( $In | ?{ !( !( ($_.Entitlement_Type__c -match "Premium") -or ($_.Entitlement_Type__c -match "Extended") -or ($_.Entitlement_Type__c -match "Elite") ) -and (($_.Priority -eq "P3") -or ($_.Priority -eq "P4")) -and ($_.Case_Age__c -lt 63) ) } )
+    return ( $In | Where-Object { !( !( ($_.Entitlement_Type__c -match "Premium") -or ($_.Entitlement_Type__c -match "Extended") -or ($_.Entitlement_Type__c -match "Elite") ) -and (($_.Priority -eq "P3") -or ($_.Priority -eq "P4")) -and ($_.Case_Age__c -lt 63) ) } )
 }
 
 function filter-desktop {
     param($In)
-    return ( $In | ?{ (
+    return ( $In | Where-Object { (
         ($_.Product__c -eq "Tableau Desktop") -or 
         ($_.Product__c -eq "Tableau Public Desktop") -or 
         ($_.Product__c -eq "Tableau Reader") -or 
@@ -166,7 +166,7 @@ function filter-desktop {
 
 function filter-server {
     param($In)
-    return ( $In | ?{ (
+    return ( $In | Where-Object { (
         ($_.Product__c -eq "Tableau Server") -or 
         ($_.Product__c -eq "Tableau Public Server") -or 
         ($_.Product__c -eq "Tableau Online") -or 
@@ -178,7 +178,7 @@ function filter-server {
 
 function filter-premium {
     param($In)
-    return ( $In | ?{ (
+    return ( $In | Where-Object { (
         # ($_.Tier__c -eq "Premium") -or ($_.Entitlement_Type__c -match "Extended") -or ($_.Entitlement_Type__c -match "Elite")) -and
         ($_.Entitlement_Type__c -match "Premium") -or ($_.Entitlement_Type__c -match "Extended") -or ($_.Entitlement_Type__c -match "Elite")) -and
         ($_.Case_Owner_Name__c -eq $null)
@@ -187,7 +187,7 @@ function filter-premium {
 
 function Filter-P1P2 {
     param($InputList)
-    return ( $InputList | ?{
+    return ( $InputList | Where-Object {
         ( ($_.Priority -eq "P1") -or ($_.Priority -eq "P2") ) -and
         ($_.Case_Owner_Name__c -eq $null)
     })
