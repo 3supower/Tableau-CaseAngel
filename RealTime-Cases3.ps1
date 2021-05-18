@@ -43,7 +43,9 @@ $query = "SELECT
     Account.Name,
     Account.CSM_Name__c,
     Account.CSM_Email__c,
-    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById FROM Histories WHERE CreatedDate=TODAY and field='Owner'),
+    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById 
+        FROM Histories 
+        WHERE CreatedDate=TODAY and field='Owner'),
     (SELECT CreatedById, body FROM Feeds),
     (SELECT MilestoneTypeId,TargetDate,TimeRemainingInDays,TimeRemainingInHrs,TimeRemainingInMins,IsViolated FROM CaseMilestones)
 FROM Case 
@@ -61,6 +63,7 @@ WHERE
 # FORMAT(Account.AnnualRevenue) frmtAmnt,
 # convertCurrency(Account.AnnualRevenue) cnvAmnt,
 # (Status='New' or Status='Active' or Status='Re-opened') AND
+# ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
 # ORDER BY Case_Owner_Name__c, Tier__c, Priority ASC, Case_Age__c DESC" -replace "`n", " "
 # ORDER BY Case_Owner_Name__c, Tier__c DESC, Entitlement_Type__c DESC, Priority,Case_Age__c DESC" -replace "`n", " "
 # ORDER BY Case_Owner_Name__c, Tier__c DESC, Account.CSM_Name__c DESC, Priority,Case_Age__c DESC" -replace "`n", " "
@@ -69,6 +72,45 @@ WHERE
 # sfdx force:auth:web:login -a vscodeOrg
 # sfdx force:org:list --all
 # sfdx force:data:soql:query -u vscodeOrg -q "select id from user limit 5"
+
+$query = "SELECT 
+	Id, 
+	CaseNumber,
+	Priority, 
+	Case_Age__c, 
+    Status,
+    Description,
+    Preferred_Case_Language__c,
+    Case_Preferred_Timezone__c,
+	Tier__c,
+	Entitlement_Type__c,
+	Category__c, 
+	Product__c, 
+	Subject, 
+	First_Response_Complete__c, 
+	CreatedDate,
+	Plan_of_Action_Status__c, 
+	Case_Owner_Name__c,
+    AccountId,
+    IsEscalated, Escalated_Case__c,
+    ClosedDate, IsClosed, isClosedText__c, 
+    Account.Name,
+    Account.CSM_Name__c,
+    Account.CSM_Email__c,
+    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById 
+        FROM Histories 
+    WHERE CreatedDate=TODAY and field='Owner'),
+    (SELECT CreatedById, body FROM Feeds)
+FROM Case 
+WHERE
+	RecordTypeId='012600000000nrwAAA' AND 
+    ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
+	Preferred_Support_Region__c ='APAC' AND 
+	Preferred_Case_Language__c != 'Japanese' AND 
+    Tier__c != 'Admin'
+" -replace "`n", " "
+
+
 
 function get-all {
     Param($Query)
@@ -106,7 +148,7 @@ function get-all {
         }
         #>
 
-        if ($null -ne $_.Account.CSM_Name__c) {
+        if ($_.Account.CSM_Name__c -ne $null) {
             # Write-Host $_.Account.AnnualRevenue
             # Write-Host $_.Account.frmtAmnt
             # Write-Host $_.Account.cnvAmnt
@@ -114,9 +156,13 @@ function get-all {
             # $_.Account.CSM_Name__c = "YES"
             $_.CSM = "YES"
         }
+
+        if (($_.isClosed -eq $true) -and ( ($_.Case_Owner_Name__c -eq $null) -or ($_.Case_Owner_Name__c -eq '') ) ) {
+            $_.Case_Owner_Name__c = "By Customer"
+        }
         
         # Changed owner Today
-        if ($null -ne $_.Histories.records) {
+        if ($_.Histories.records -ne $null) {
             $_.Histories = "YES"
         }
 
@@ -286,18 +332,18 @@ function update_sheet {
     # $sheet.UsedRange.ClearContents()
 
     $sheet.Cells.Item(1, 13) = "Updated: $datetime"
-    $sheet.Cells.Item(1, 3) = "Count:"
+    # $sheet.Cells.Item(1, 3) = "Count:"
     $q_list = ($list | ? { $_.Case_Owner_Name__c -eq $null })
     $a_list = ($list | ? { $_.Case_Owner_Name__c -ne $null })
     
-    ## Queue Count
-    $sheet.Cells.Item(1, 4) = $q_list.Count
-    $sheet.Cells.Item(1, 4).Font.Bold = $true
+    ## Unassigned Count
+    $sheet.Cells.Item(1, 3) = "Unassigned: $($q_list.Count)"
+    $sheet.Cells.Item(1, 3).Font.Bold = $true
     ## Assigned Count
-    $sheet.Cells.Item(1, 5) = $a_list.Count
+    $sheet.Cells.Item(1, 5) = "Assigned: $($a_list.Count)"
     ## Total Count
-    $sheet.Cells.Item(1, 6) = $list.Count
-    $sheet.Cells.Item(1, 6).Interior.ColorIndex = 6
+    $sheet.Cells.Item(1, 7) = "Total: $($list.Count)"
+    $sheet.Cells.Item(1, 7).Interior.ColorIndex = 6
 
     ## Create a table header
     $header = @{
@@ -384,19 +430,58 @@ function update_sheet {
         if ($row.Case_Owner_Name__c -ne $null) {
             # $sheet.Cells.Item($i, $header['Case_Owner_Name__c']) = $row.Case_Owner_Name__c.Split(" ")[0]
             $sheet.Cells.Item($i, $header['Case_Owner_Name__c']) = $row.Case_Owner_Name__c
-
         }
 
         # Case Number
         # $sheet.Cells.Item($i, $header['CaseNumber']) = $row.CaseNumber
         # Write-Host $row.Description
+        Write-Host $row.CaseNumber
+        <# 
         $sheet.Hyperlinks.Add(
             $sheet.Cells.Item($i, $header['CaseNumber']),
             $hyperroot+$row.Id,
             "",
             $hyperroot+$row.Id,
+            # $row.Description,
             $row.CaseNumber
         ) | Out-Null
+        #>
+        if (($row.Description -eq $null) -or ($row.Description -eq '')) {
+            Write-Host "Description is NULLLLLLLLLLLLLLLLLLLLLLLLL"
+            $row.Description = $row.CaseNumber
+        }
+        
+        $sheet.Hyperlinks.Add(
+            $sheet.Cells.Item($i, $header['CaseNumber']),
+            $hyperroot+$row.Id,
+            "",
+            $hyperroot+$row.Id,
+            # $row.Description,
+            $row.CaseNumber
+        ) | Out-Null
+        
+
+        <#
+        try {
+            $sheet.Hyperlinks.Add(
+                $sheet.Cells.Item($i, $header['CaseNumber']),
+                $hyperroot+$row.Id,
+                "",
+                # $hyperroot+$row.Id,
+                $row.Description,
+                $row.CaseNumber
+            ) | Out-Null
+        } catch {
+            $sheet.Hyperlinks.Add(
+                $sheet.Cells.Item($i, $header['CaseNumber']),
+                $hyperroot+$row.Id,
+                "",
+                $hyperroot+$row.Id,
+                # $row.Description,
+                $row.CaseNumber
+            ) | Out-Null
+        }
+        #>
 
         # Created Date
         # $sheet.Cells.Item($i, 3) = ([datetime]$row.CreatedDate).ToString("yyyy-MM-dd HH:mm")
@@ -518,16 +603,17 @@ function update_sheet {
         if ($row.Case_Preferred_Timezone__c) {
             $sheet.Cells.Item($i, $header['Case_Preferred_Timezone__c']) = ($row.Case_Preferred_Timezone__c).split(" ")[0]
         }
+
         # Product
         $sheet.Cells.Item($i, $header['Product__c']) = ($row.Product__c).Split(" ")[1]
         if (($row.Product__c -eq "Tableau Desktop") -or ($row.Product__c -eq "Tableau Public Desktop") -or ($row.Product__c -eq "Tableau Reader") -or ($row.Product__c -eq "Tableau Prep") -or ($row.Product__c -eq "Tableau Public Desktop") ) {
-            $sheet.Cells.Item($i, $header['Product__c']).Interior.ColorIndex = 35
-            # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.ThemeColor = xlThemeColorAccent3
-            # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.TintAndShade = 0.6
+            # $sheet.Cells.Item($i, $header['Product__c']).Interior.ColorIndex = 35
+            # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.ThemeColor = xlThemeColorAccent3
+            # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.TintAndShade = 0.6
         } else {
-            $sheet.Cells.Item($i, $header['Product__c']).Interior.ColorIndex = 37
-            # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.ThemeColor = xlThemeColorAccent3
-            # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.TintAndShade = 0.6
+            # $sheet.Cells.Item($i, $header['Product__c']).Interior.ColorIndex = 37
+            # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.ThemeColor = xlThemeColorAccent3
+            # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.TintAndShade = 0.6
         }
         
         # Category
@@ -955,7 +1041,7 @@ function Run-MainLoop {
                 
                 try {
                     update_sheet -sheet $sheet_dsk -list $desktop
-                    update_sheet -sheet $sheet_srv -list $server -ErrorAction Stop
+                    update_sheet -sheet $sheet_srv -list $server -ErrorAction Continue
                     update_sheet -sheet $sheet_pre -list $premium -ErrorAction Continue
                     update_sheet -sheet $sheet_p1p2 -list $p1p2 -ErrorAction Continue
                     update_sheet -sheet $sheet_p3p4 -list $p3p4 -ErrorAction Continue
