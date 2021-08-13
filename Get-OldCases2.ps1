@@ -113,6 +113,7 @@ function mrkdwn {
 
 
 $all = Get-QueryResult -Query $query
+$all = $all | ?{ (([datetime]$_.CreatedDate).ToUniversalTime() -gt [datetime]"8/7/2021 23:59") -or (($_.Entitlement_Type__c -match "Premium") -or ($_.Entitlement_Type__c -match "Extended") -or ($_.Entitlement_Type__c -match "Elite")) }
 $desktop = $all | ?{ ($_.Product__c -eq "Tableau Desktop") -or ($_.Product__c -eq "Tableau Public Desktop") -or ($_.Product__c -eq "Tableau Reader") -or ($_.Product__c -eq "Tableau Prep") -or ($_.Product__c -eq "Tableau Public Desktop")}
 $server =  $all | ?{ (($_.Product__c -eq "Tableau Server") -or ($_.Product__c -eq "Tableau Public Server") -or ($_.Product__c -eq "Tableau Online") -or ($_.Product__c -eq "Tableau Mobile") -or ($_.Product__c -eq "Tableau Resource Monitoring Tool") -or ($_.Product__c -eq "Tableau Content Migration Tool") ) }
 $premium = $all | ?{ ($_.Tier__c -eq "Premium") -or $_.Entitlement_Type__c -match "Extended"}
@@ -312,3 +313,66 @@ MessageTo-Slack -Channel $uri2 -Message $divider
 <# Slack #>
 $divider = ConvertTo-Json -Depth 10 @{blocks=@(@{type="divider"})}
 $slack_divider = '{"blocks":[{"type":"divider"}]}'
+
+
+
+
+
+
+
+$body = '{
+	"type": "modal",
+	"title": {
+		"type": "plain_text",
+		"text": "My App",
+		"emoji": true
+	},
+	"submit": {
+		"type": "plain_text",
+		"text": "Submit",
+		"emoji": true
+	},
+	"close": {
+		"type": "plain_text",
+		"text": "Cancel",
+		"emoji": true
+	},
+	"blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "Check out these charming checkboxes"
+			},
+			"accessory": {
+				"type": "checkboxes",
+				"action_id": "this_is_an_action_id",
+				"initial_options": [{
+					"value": "A1",
+					"text": {
+						"type": "plain_text",
+						"text": "Checkbox 1"
+					}
+				}],
+				"options": [
+					{
+						"value": "A1",
+						"text": {
+							"type": "plain_text",
+							"text": "Checkbox 1"
+						}
+					},
+					{
+						"value": "A2",
+						"text": {
+							"type": "plain_text",
+							"text": "Checkbox 2"
+						}
+					}
+				]
+			}
+		}
+	]
+}'
+
+MessageTo-Slack -Channel $uri2 -Message $body

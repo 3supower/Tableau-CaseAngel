@@ -33,7 +33,7 @@ WHERE
     ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
 	Preferred_Support_Region__c ='APAC' AND 
 	Preferred_Case_Language__c != 'Japanese' AND 
-    Tier__c != 'Admin' and CaseNumber = '06461384'
+    Tier__c != 'Admin'
 " -replace "`n", " "
 
 $query2 = "SELECT 
@@ -107,7 +107,41 @@ WHERE
     ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
 	Preferred_Support_Region__c ='APAC' AND 
 	Preferred_Case_Language__c != 'Japanese' AND 
-    Tier__c != 'Admin' and CaseNumber = '06461384'
+    Tier__c != 'Admin'
+" -replace "`n", " "
+
+$query4 = "SELECT 
+    RecordTypeId,
+	Id, 
+	CaseNumber,
+	Priority, 
+	Case_Age__c, 
+    Status,
+    Description,
+    Preferred_Case_Language__c,
+    Case_Preferred_Timezone__c,
+	Tier__c,
+	Entitlement_Type__c,
+	Category__c, 
+	Product__c, 
+	Subject, 
+	First_Response_Complete__c, 
+	CreatedDate,
+	Plan_of_Action_Status__c, 
+	Case_Owner_Name__c,
+    AccountId,
+    IsEscalated, Escalated_Case__c,
+    ClosedDate, IsClosed, isClosedText__c,
+    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById 
+        FROM Histories 
+        WHERE CreatedDate=TODAY and field='Owner')
+FROM Case 
+WHERE
+	RecordTypeId='012600000000nrwAAA' AND 
+    ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
+	Preferred_Support_Region__c ='APAC' AND 
+	Preferred_Case_Language__c != 'Japanese' AND 
+    Tier__c != 'Admin'
 " -replace "`n", " "
 
 
@@ -255,5 +289,79 @@ function get-small {
     return $new_obj
 }
 
-get-all($query)
+
+function get-tiny {
+    Param($Query)
+    Do {
+        $ts_start = (Get-Date)
+        $ts = $ts_start.ToString("yyyy-MM-dd-HH:mm:ss")
+        Write-Host "Query starts at $ts ==" -ForegroundColor Yellow
+        
+        $json_result = (sfdx force:data:soql:query -q $Query -u vscodeOrg --json)
+        
+    } While (($null -eq $json_result) -or ($json_result -eq $false))
+
+    $ts_end = (Get-Date)
+    $ts = $ts_end.ToString("yyyy-MM-dd-HH:mm:ss")
+    Write-Host "Query Finished at $ts" -ForegroundColor Yellow
+
+    $els = $ts_end - $ts_start
+    Write-Host "Elapsed Time: $els"
+
+    $raw_obj = ($json_result | ConvertFrom-Json).result.records
+    $new_obj = @()
+    # $raw_obj | gm
+    $raw_obj | ForEach-Object {
+        if (($_.isClosed -eq $true) -and ( ($_.Case_Owner_Name__c -eq $null) -or ($_.Case_Owner_Name__c -eq '') ) ) {
+            Write-Host "What is the case ownername?"
+            # $_.Case_Owner_Name__c = "By Customer"
+            Write-Host $_.Case_Owner_Name__c
+        }
+        
+        # Changed owner Today
+        # Write-Host "My history:"
+        # Write-Host $_.Histories.records
+        if ($null -ne $_.Histories.records) {
+            $_.Histories = "YES"
+            Write-Host "Yes, I am done today!"
+        }
+
+        if ($_.Entitlement_Type__c -eq 'TOL Premium') {
+            $_.Entitlement_Type__c = 'Premium'
+        }
+
+        $new_obj += $_
+    }
+
+    #Filter the new object to keep the cases unassigned or assigned to somebody TODAY only.
+    $new_obj = ($new_obj | Where-Object { ($_.Case_Owner_Name__c -eq $null) -or (  ($_.Case_Owner_Name__c -ne $null) -and ($_.Histories -eq "YES") ) })
+
+    return $new_obj
+}
+
+
+# get-all($query)
 # get-small($query3)
+
+$all = get-tiny($query4)
+
+$all | %{
+    if ($_.CaseNumber -eq "07414350") {
+        $_.CaseNumber
+        $_.CreatedDate
+        [datetime]$_.CreatedDate
+        ([datetime]$_.CreatedDate).ToUniversalTime()
+        [datetime]"8/7/2021 23:59"
+        if (([datetime]$_.CreatedDate).ToUniversalTime() -gt [datetime]"8/7/2021 23:59") {
+            Write-Host "Yes"
+        } else {
+            Write-Host "No"
+        }
+    }
+    
+    Write-Host ""
+}
+
+# $all = $all | ?{ (([datetime]$_.CreatedDate) -gt [datetime]"8/7/2021") }
+
+# $all

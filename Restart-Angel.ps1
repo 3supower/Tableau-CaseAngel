@@ -1,30 +1,10 @@
-﻿$uri = "https://hooks.slack.com/services/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"
+﻿# Include Functions
+. C:\MyProjects\ps\Angel\RealTime-Func.ps1
+
+$uri = "https://hooks.slack.com/services/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"
 $filename = "APACTechSupRealTimeDashboard.xlsx"
 $foldername = "C:\Users\jchoi\Tableau Software Inc\APAC Tech Support - Documents\"
 $filepath = "C:\Users\jchoi\Tableau Software Inc\APAC Tech Support - Documents\$filename"
-
-function MessageTo-Slack {
-    param($ChannelUri, $Message)
-
-    # $text = ":alert:Good day folks! Case list is here!:alert:"
-    $body = ConvertTo-Json @{
-        text="$text $Message"
-    }
-    
-    $body = ConvertTo-Json @{
-        # text=":alert: <!here> Restarting RealTime Angel"
-        text=":alert: Restarting RealTime Angel"
-    }
-
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-RestMethod -Method POST -ContentType "application/json" -uri $ChannelUri -Body $body | Out-Null
-}
-
-function Slack-Mrkdwn {
-    [CmdletBinding()]
-    param ($Text)
-    return (ConvertTo-Json -Depth 10 @{blocks=@(@{type="section";text=@{type="mrkdwn";text="$Text"}})})
-} 
 
 MessageTo-Slack -ChannelUri $uri -Message "Test"
 

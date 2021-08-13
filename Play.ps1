@@ -27,9 +27,14 @@ function Remove-RealTimeAngelSheets {
     Write-Host "$filename has been removed"
 }
 
+function Remove-Cache {
+    $user = $env:USERNAME
+    Remove-Item -Path "C:\Users\$user\AppData\Local\Microsoft\Office\16.0\OfficeFileCache11\*" -Recurse -Force
+}
+
 function Start-OldCaseAngel {
     Write-Host "Run Old Case Angel"
-    start powershell.exe C:\MyProjects\ps\Angel\Get-OldCases.ps1
+    start powershell.exe C:\MyProjects\ps\Angel\Get-OldCases2.ps1
 }
 
 function Start-WeekendAngel {
@@ -54,7 +59,7 @@ function Start-CrashPlan {
 
 
 $MainWindow = New-Object System.Windows.Forms.Form
-$MainWindow.ClientSize = "640, 320"
+$MainWindow.ClientSize = "850, 320"
 $MainWindow.Text ="RealTime Angel Control Center"
 $MainWindow.BackColor = "White"
 
@@ -100,6 +105,17 @@ $BtnRmAngel.Font = $font_regular
 $BtnRmAngel.Add_Click({Remove-RealTimeAngelSheets})
 
 
+$BtnRmCache = New-Object System.Windows.Forms.Button
+$BtnRmCache.BackColor = "Black"
+$BtnRmCache.ForeColor = "White"
+$BtnRmCache.Text = "Remove Office Cache Files"
+$BtnRmCache.Width = 200
+$BtnRmCache.Height = 80
+$BtnRmCache.Location = New-Object System.Drawing.Point(640, 50)
+$BtnRmCache.Font = $font_regular
+$BtnRmCache.Add_Click({Remove-Cache})
+
+
 $BtnRunOld = New-Object System.Windows.Forms.Button
 $BtnRunOld.BackColor = "Magenta"
 $BtnRunOld.ForeColor = "White"
@@ -137,5 +153,6 @@ $MainWindow.Controls.Add($BtnRunOld)
 $MainWindow.Controls.Add($BtnRunWkd)
 $MainWindow.Controls.Add($BtnStopWkd)
 $MainWindow.Controls.Add($BtnRmAngel)
+$MainWindow.Controls.Add($BtnRmCache)
 
 [void]$MainWindow.ShowDialog()
