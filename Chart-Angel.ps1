@@ -116,7 +116,7 @@ $body = '{
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Total: '+ $p_total +'*"
+                "text": "*Total (Standard Cases): '+ $p_total +'*"
             }
         },
         {   "type": "divider"   }

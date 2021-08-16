@@ -2,7 +2,8 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Include Functions
-. C:\MyProjects\ps\Angel\RealTime-Func.ps1
+. $PSScriptRoot\RealTime-Func.ps1
+. $PSScriptRoot\Angel-Query.ps1
 
 ## Global variables ##
 $user =             $env:USERNAME
@@ -13,10 +14,10 @@ $dwfolder =         "C:\Downloads"
 $dwfile =           "C:\Downloads\$file_name"
 $kbfolder =         "C:\Users\$user\Documents"
 $bkfile =           "C:\Users\$user\Documents\$file_name"
-$officeCacheRoot = "C:\Users\$user\AppData\Local\Microsoft\Office\16.0"
-$CacheLocation = "$officeCacheRoot\OfficeFileCache"
-$angel_pid_file = "C:\MyProjects\PS\Angel\angel.pid"
-$excel_pid_file = "C:\MyProjects\PS\Angel\excel.pid"
+$officeCacheRoot =  "C:\Users\$user\AppData\Local\Microsoft\Office\16.0"
+$CacheLocation =    "$officeCacheRoot\OfficeFileCache"
+$angel_pid_file =   "C:\MyProjects\PS\Angel\angel.pid"
+$excel_pid_file =   "C:\MyProjects\PS\Angel\excel.pid"
 
 ## SharePoint (Online) ## 
 $sp_root =   "https://tableau.sharepoint.com/sites/APACTechSupport/Shared%20Documents"
@@ -33,133 +34,6 @@ $uri =       "https://hooks.slack.com/services/T7KUQ9FLZ/BSGMBFL85/376YrsEVCGJQI
 # sfdx force:auth:web:login -a vscodeOrg
 # sfdx force:org:list --all
 # sfdx force:data:soql:query -u vscodeOrg -q "select id from user limit 5"
-
-### SalesForce Query ###
-$query = "SELECT 
-	Id, 
-	CaseNumber,
-	Priority, 
-	Case_Age__c, 
-    Status,
-    Description,
-    Preferred_Case_Language__c,
-    Case_Preferred_Timezone__c,
-	Tier__c,
-	Entitlement_Type__c,
-	Category__c, 
-	Product__c, 
-	Subject, 
-	First_Response_Complete__c, 
-	CreatedDate,
-	Plan_of_Action_Status__c, 
-	Case_Owner_Name__c,
-    AccountId,
-    IsEscalated, Escalated_Case__c,
-    ClosedDate, IsClosed, isClosedText__c, 
-    Account.Name,
-    Account.CSM_Name__c,
-    Account.CSM_Email__c,
-    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById 
-        FROM Histories 
-        WHERE CreatedDate=TODAY and field='Owner'),
-    (SELECT CreatedById, body FROM Feeds),
-    (SELECT MilestoneTypeId,TargetDate,TimeRemainingInDays,TimeRemainingInHrs,TimeRemainingInMins,IsViolated FROM CaseMilestones)
-FROM Case 
-WHERE
-	RecordTypeId='012600000000nrwAAA' AND 
-    ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
-	Preferred_Support_Region__c ='APAC' AND 
-	Preferred_Case_Language__c != 'Japanese' AND 
-    Tier__c != 'Admin'
-" -replace "`n", " "
-#
-# (SELECT CreatedById, body FROM Feeds),
-# Id IN (SELECT CaseID FROM CaseHistory ) AND Id IN (SELECT ParentId FROM CaseFeed) AND Id IN (SELECT CaseId FROM CaseMilestone)
-# Account.AnnualRevenue,
-# FORMAT(Account.AnnualRevenue) frmtAmnt,
-# convertCurrency(Account.AnnualRevenue) cnvAmnt,
-# (Status='New' or Status='Active' or Status='Re-opened') AND
-# ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
-# ORDER BY Case_Owner_Name__c, Tier__c, Priority ASC, Case_Age__c DESC" -replace "`n", " "
-# ORDER BY Case_Owner_Name__c, Tier__c DESC, Entitlement_Type__c DESC, Priority,Case_Age__c DESC" -replace "`n", " "
-# ORDER BY Case_Owner_Name__c, Tier__c DESC, Account.CSM_Name__c DESC, Priority,Case_Age__c DESC" -replace "`n", " "
-# ORDER BY Case_Owner_Name__c, Priority,Case_Age__c DESC" -replace "`n", " "
-
-$query = "SELECT 
-	Id, 
-	CaseNumber,
-	Priority, 
-	Case_Age__c, 
-    Status,
-    Description,
-    Preferred_Case_Language__c,
-    Case_Preferred_Timezone__c,
-	Tier__c,
-	Entitlement_Type__c,
-	Category__c, 
-	Product__c, 
-	Subject, 
-	First_Response_Complete__c, 
-	CreatedDate,
-	Plan_of_Action_Status__c, 
-	Case_Owner_Name__c,
-    AccountId,
-    IsEscalated, Escalated_Case__c,
-    ClosedDate, IsClosed, isClosedText__c, 
-    Account.Name,
-    Account.CSM_Name__c,
-    Account.CSM_Email__c,
-    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById 
-        FROM Histories 
-    WHERE CreatedDate=TODAY and field='Owner'),
-    (SELECT CreatedById, body FROM Feeds)
-FROM Case 
-WHERE
-	RecordTypeId='012600000000nrwAAA' AND 
-    ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
-	Preferred_Support_Region__c ='APAC' AND 
-	Preferred_Case_Language__c != 'Japanese' AND 
-    Tier__c != 'Admin'
-" -replace "`n", " "
-
-
-# Removed Protip...
-$query = "SELECT 
-	Id, 
-	CaseNumber,
-	Priority, 
-	Case_Age__c, 
-    Status,
-    Description,
-    Preferred_Case_Language__c,
-    Case_Preferred_Timezone__c,
-	Tier__c,
-	Entitlement_Type__c,
-	Category__c, 
-	Product__c, 
-	Subject, 
-	First_Response_Complete__c, 
-	CreatedDate,
-	Plan_of_Action_Status__c, 
-	Case_Owner_Name__c,
-    AccountId,
-    IsEscalated, Escalated_Case__c,
-    ClosedDate, IsClosed, isClosedText__c, 
-    Account.Name,
-    Account.CSM_Name__c,
-    Account.CSM_Email__c,
-    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById 
-        FROM Histories 
-    WHERE CreatedDate=TODAY and field='Owner')
-FROM Case 
-WHERE
-	RecordTypeId='012600000000nrwAAA' AND 
-    ( (IsClosed=False) OR (IsClosed=True AND ClosedDate=TODAY) ) AND
-	Preferred_Support_Region__c ='APAC' AND 
-	Preferred_Case_Language__c != 'Japanese' AND 
-    Tier__c != 'Admin'
-" -replace "`n", " "
-
 
 function update_sheet {
     [CmdletBinding()]
@@ -716,6 +590,8 @@ $host.UI.RawUI.WindowTitle = $Title
 
 # Remove-Item -Path $CacheLocation -Recurse -Force
 Start $officeCacheRoot
+Start $sp_path
+Start $PSScriptRoot
 
 if (!(Test-Path $sfile -PathType Leaf)) {
     # Create-ExcelFile -OutFile $sfile
