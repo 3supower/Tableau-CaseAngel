@@ -369,6 +369,11 @@ function update_sheet {
 function Run-MainLoop {
     param($InFile)
 
+    if (!(Test-Path $sfile -PathType Leaf)) {
+        # Create-ExcelFile -OutFile $sfile
+        Copy-Item $dwfile -Destination $sp_path
+    }
+
     $hyperroot = "https://tableau.my.salesforce.com/"
 
     # Timeout for restarting Excel
@@ -558,7 +563,14 @@ function Run-MainLoop {
                 
             }
             
-            Copy-Item $sfile -Destination $kbfolder -Force
+            try {
+                Copy-Item $sfile -Destination $kbfolder -Force -ErrorAction Stop
+            } catch {
+                # Copy-Item $dwfile -Destination $sp_path -Force
+                Write-Error $Error
+                Start powershell.exe "$PSScriptRoot\Restart-Angel.ps1"
+            }
+            
         }
 
         # Periodic shutdown
@@ -593,10 +605,12 @@ Start $officeCacheRoot
 Start $sp_path
 Start $PSScriptRoot
 
+<#
 if (!(Test-Path $sfile -PathType Leaf)) {
     # Create-ExcelFile -OutFile $sfile
     Copy-Item $dwfile -Destination $sp_path
 }
+#>
 
 if (!(Test-Path $angel_pid_file -PathType Leaf)) {
     New-Item $angel_pid_file -ItemType file

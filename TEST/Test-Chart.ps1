@@ -82,6 +82,7 @@ $core =    $all | ?{ !( ($_.Tier__c -eq "Premium") -or ($_.Entitlement_Type__c -
 # Creating Priority Doughnut Chart
 $p_total = $core.Count
 $p_arr = $core | Group-Object Priority | Select-Object Name, Count | Sort-Object Name
+$p_arr
 $p1_cnt = $p_arr.Count
 $p2_cnt = $p_arr.Count
 $p3_cnt = $p_arr
