@@ -98,6 +98,7 @@ function filter-desktop {
         ($_.Product__c -eq "Tableau Public Desktop") -or 
         ($_.Product__c -eq "Tableau Reader") -or 
         ($_.Product__c -eq "Tableau Prep") -or 
+        ($_.Product__c -eq "Tableau Prep Builder") -or
         ($_.Product__c -eq "Tableau Public Desktop") ) # -and ($_.Case_Owner_Name__c -eq $null)
     })
 }
@@ -109,6 +110,8 @@ function filter-server {
         ($_.Product__c -eq "Tableau Public Server") -or 
         ($_.Product__c -eq "Tableau Online") -or 
         ($_.Product__c -eq "Tableau Mobile") -or 
+        ($_.Product__c -eq "Connector SDK") -or
+        ($_.Product__c -eq "Extract API") -or
         ($_.Product__c -eq "Tableau Resource Monitoring Tool") -or 
         ($_.Product__c -eq "Tableau Content Migration Tool") ) # -and ($_.Case_Owner_Name__c -eq $null)
     })

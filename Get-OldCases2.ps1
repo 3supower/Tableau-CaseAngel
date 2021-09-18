@@ -42,6 +42,23 @@ WHERE
 	Tier__c != 'Admin'
 ORDER BY Case_Owner_Name__c, Priority,Case_Age__c DESC" -replace "`n", " "
 
+$query2 = "SELECT 
+	Id, CaseNumber, Priority, Case_Age__c, Status, Preferred_Case_Language__c, Tier__c, 
+	Category__c, Product__c, subject, First_Response_Complete__c, CreatedDate, 
+	Entitlement_Type__c, Plan_of_Action_Status__c, Case_Owner_Name__c,
+    AccountId, Account.Name,
+    (SELECT CreatedDate, field, OldValue, NewValue, CreatedById FROM Histories WHERE CreatedDate < TODAY and field='Owner'),
+    IsEscalated, Escalated_Case__c, 
+    (SELECT CreatedById, body FROM Feeds)
+FROM case 
+WHERE 
+    Id IN (SELECT CaseID FROM CaseHistory ) AND Id IN (SELECT ParentId FROM CaseFeed) AND
+	RecordTypeId='012600000000nrwAAA' AND 
+	IsClosed=False AND
+	Preferred_Support_Region__c ='APAC' AND 
+	Preferred_Case_Language__c != 'Japanese' AND 
+	Tier__c != 'Admin'
+ORDER BY Case_Owner_Name__c, Priority,Case_Age__c DESC" -replace "`n", " "
 
 <# Functions #>
 function Get-QueryResult {

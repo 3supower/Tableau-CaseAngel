@@ -280,10 +280,14 @@ function update_sheet {
 
         # Products
         $sheet.Cells.Item($i, $header['Product__c']) = ($row.Product__c).Split(" ")[1]
-        if (($row.Product__c -eq "Tableau Desktop") -or ($row.Product__c -eq "Tableau Public Desktop") -or ($row.Product__c -eq "Tableau Reader") -or ($row.Product__c -eq "Tableau Prep") -or ($row.Product__c -eq "Tableau Public Desktop") ) {
+        # if (($row.Product__c -eq "Tableau Desktop") -or ($row.Product__c -eq "Tableau Public Desktop") -or ($row.Product__c -eq "Tableau Reader") -or ($row.Product__c -eq "Tableau Prep") -or ($row.Product__c -eq "Tableau Public Desktop") ) {
+        if (($row.Product__c -eq "Tableau Public Desktop") ) {
+            $sheet.Cells.Item($i, $header['Product__c']) = "Public(D)"
             # $sheet.Cells.Item($i, $header['Product__c']).Interior.ColorIndex = 35
             # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.ThemeColor = xlThemeColorAccent3
             # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.TintAndShade = 0.6
+        } elseif (($row.Product__c -eq "Tableau Public Server") ) {
+            $sheet.Cells.Item($i, $header['Product__c']) = "Public(S)"
         } else {
             # $sheet.Cells.Item($i, $header['Product__c']).Interior.ColorIndex = 37
             # # $sheet.Cells.Item($i, $header['Product__c']).Interior.Interior.ThemeColor = xlThemeColorAccent3
@@ -331,11 +335,15 @@ function update_sheet {
         
         # Hide cases if fresh P3 and P4
         # Write-Host $sheet.Name
-        <#
-        if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All") -and ($row.Entitlement_Type__c -match "Standard") -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") -and ($row.Case_Age__c -lt 63) -and ($row.Case_Owner_Name__c -eq $null) ) {
+        <##>
+        if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese") `
+                -and ($row.Entitlement_Type__c -match "Standard") `
+                -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
+                -and ($row.Case_Age__c -lt 63) `
+                -and ($row.Case_Owner_Name__c -eq $null) ) {
             $sheet.Rows($i).Hidden = $true
         }
-        #>
+        <##>
 
         <# New filter requested by Emma #>
         <## show only p1, p2, premium and escalation only ##>
@@ -543,13 +551,13 @@ function Run-MainLoop {
             # Writing Hearbeat on the sheets
             $datetime = Get-AESTDate
             foreach ($asheet in $workbook.sheets) {
-                if ( ($asheet.Name -eq "URNext") -or ($asheet.Name -eq "Stat") -or ($asheet.Name -eq "Pizza")) {
-                    $asheet.Unprotect()
-                } else {
+                if ( ($asheet.Name -eq "All") -or ($asheet.Name -eq "Premium") -or ($asheet.Name -eq "Aged P3P4") -or ($asheet.Name -eq "Server") -or ($asheet.Name -eq "Desktop") -or ($asheet.Name -eq "Assigned") -or ($asheet.Name -eq "Unassigned") -or ($asheet.Name -eq "India") -or ($asheet.Name -eq "Chinese") -or ($asheet.Name -eq "Korean") ) {
                     $asheet.Unprotect()
                     $asheet.Cells.Item(1, 14) = "Check-In: $datetime"
                     $asheet.Cells.Item(1, 14).HorizontalAlignment = -4131
                     $asheet.Protect('',0,1,0,0,1,0,1,0,0,1,0,1,0,1,1)
+                } else {
+                    $asheet.Unprotect()
                 }
             }
 
