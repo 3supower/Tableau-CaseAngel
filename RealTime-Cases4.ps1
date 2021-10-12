@@ -338,7 +338,7 @@ function update_sheet {
         
         # Hide cases if fresh P3 and P4
         # Write-Host $sheet.Name
-        <#
+        <##>
         if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese") `
                 -and ($row.Entitlement_Type__c -match "Standard") `
                 -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
@@ -346,14 +346,7 @@ function update_sheet {
                 -and ($row.Case_Owner_Name__c -eq $null) ) {
             $sheet.Rows($i).Hidden = $true
         }
-        #>
-
-        if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese" -or $sheet.Name -match "Unassigned") `
-                -and ($row.Entitlement_Type__c -match "Standard") `
-                -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
-                -and ($row.Case_Owner_Name__c -eq $null) ) {
-            $sheet.Rows($i).Hidden = $true
-        }
+        <##>
 
         <# New filter requested by Emma #>
         <## show only p1, p2, premium and escalation only ##>
@@ -387,16 +380,16 @@ function update_sheet {
 function Run-MainLoop {
     param($InFile)
 
+    
     if (!(Test-Path $sfile -PathType Leaf)) {
         # Create-ExcelFile -OutFile $sfile
         Copy-Item $dwfile -Destination $sp_path
     }
+    
 
-    <#
-    if (!(Test-Path $local_file -PathType Leaf)) {
-        Create-ExcelFile -OutFile $local_file
+    if (!(Test-Path $InFile -PathType Leaf)) {
+        Create-ExcelFile -OutFile $InFile
     }
-    #>
     
     $hyperroot = "https://tableau.my.salesforce.com/"
 
@@ -409,6 +402,10 @@ function Run-MainLoop {
         $excel = New-Object -ComObject Excel.Application
         $excel.Visible = $true
         $workbook = $excel.Workbooks.Open($InFile)
+
+        # $o_excel = New-Object -ComObject Excel.Application
+        # $o_excel.Visible = $true
+        $o_workbook = $excel.Workbooks.Open($sfile)
 
         Get-Process excel | select MainWindowTitle, Id, StartTime
 
@@ -424,7 +421,7 @@ function Run-MainLoop {
         Write-Host "Excel PID"      $excel_pid
         Write-Host "Excel PID File" $excel_pid_file_pid
 
-        $excel.Visible = $false
+        # $excel.Visible = $false
         $excel.AutoRecover.Enabled = $false
         $excel.DisplayAlerts = $false
         
@@ -572,7 +569,10 @@ function Run-MainLoop {
                     $asheet.Unprotect()
                     $asheet.Cells.Item(1, 14) = "Check-In: $datetime"
                     $asheet.Cells.Item(1, 14).HorizontalAlignment = -4131
-                    $asheet.Protect('',0,1,0,0,1,0,1,0,0,1,0,1,0,1,1)
+                    # $asheet.Protect('',0,1,0,0,1,0,1,0,0,1,0,1,0,1,1)
+                    $osheet = $o_workbook.sheets.item($asheet.Name)
+                    $asheet.copy($osheet)
+
                 } else {
                     $asheet.Unprotect()
                 }
@@ -649,4 +649,4 @@ $Text = Slack-Mrkdwn -Text "@here Angel is Starting..."
 MessageTo-Slack -ChannelUri $uri -Message "Starting Realtime Angel at $web_lnk"
 Send-AngelNotification -Message "<h1>Angel is Starting</h1>"
 
-Run-MainLoop -InFile $sfile
+Run-MainLoop -InFile $local_file
