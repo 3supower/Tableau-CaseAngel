@@ -338,7 +338,7 @@ function update_sheet {
         
         # Hide cases if fresh P3 and P4
         # Write-Host $sheet.Name
-        <#
+        <##>
         if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese") `
                 -and ($row.Entitlement_Type__c -match "Standard") `
                 -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
@@ -346,14 +346,15 @@ function update_sheet {
                 -and ($row.Case_Owner_Name__c -eq $null) ) {
             $sheet.Rows($i).Hidden = $true
         }
-        #>
 
+        <#
         if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese" -or $sheet.Name -match "Unassigned") `
                 -and ($row.Entitlement_Type__c -match "Standard") `
                 -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
                 -and ($row.Case_Owner_Name__c -eq $null) ) {
             $sheet.Rows($i).Hidden = $true
         }
+        #>
 
         <# New filter requested by Emma #>
         <## show only p1, p2, premium and escalation only ##>
