@@ -109,9 +109,11 @@ function filter-server {
         ($_.Product__c -eq "Tableau Server") -or 
         ($_.Product__c -eq "Tableau Public Server") -or 
         ($_.Product__c -eq "Tableau Online") -or 
+        ($_.Product__c -eq "Tableau Bridge") -or 
         ($_.Product__c -eq "Tableau Mobile") -or 
         ($_.Product__c -eq "Connector SDK") -or
         ($_.Product__c -eq "Extract API") -or
+        ($_.Product__c -eq "Hyper API") -or
         ($_.Product__c -eq "Tableau Resource Monitoring Tool") -or 
         ($_.Product__c -eq "Tableau Content Migration Tool") ) # -and ($_.Case_Owner_Name__c -eq $null)
     })
