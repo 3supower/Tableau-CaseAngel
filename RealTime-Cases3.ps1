@@ -342,7 +342,7 @@ function update_sheet {
         if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese" -or $sheet.Name -match "Unassigned" -or $sheet.Name -match "Aged P3P4") `
                 -and ($row.Entitlement_Type__c -match "Standard") `
                 -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
-                -and ($row.Case_Age__c -lt 200) `
+                -and ($row.Case_Age__c -lt 150) `
                 -and ($row.Case_Owner_Name__c -eq $null) ) {
             $sheet.Rows($i).Hidden = $true
         }

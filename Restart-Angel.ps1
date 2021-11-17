@@ -1,10 +1,10 @@
 ﻿# Include Functions
 . C:\MyProjects\ps\Angel\RealTime-Func.ps1
-
+$user =             $env:USERNAME
 $uri = "https://hooks.slack.com/services/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"
 $filename = "APACTechSupRealTimeDashboard.xlsx"
-$foldername = "C:\Users\jchoi\Tableau Software Inc\APAC Tech Support - Documents\"
-$filepath = "C:\Users\jchoi\Tableau Software Inc\APAC Tech Support - Documents\$filename"
+$foldername = "C:\Users\$user\Tableau Software Inc\APAC Tech Support - Documents\"
+$filepath = "C:\Users\$user\Tableau Software Inc\APAC Tech Support - Documents\$filename"
 
 MessageTo-Slack -ChannelUri $uri -Message "Test"
 
