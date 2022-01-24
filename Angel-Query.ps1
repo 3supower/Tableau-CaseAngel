@@ -124,3 +124,33 @@ WHERE
     Tier__c != 'Admin'
 " -replace "`n", " "
 
+$the_CaseNumber = $null
+
+$case_query = "SELECT 
+	Id, 
+	CaseNumber,
+	Priority, 
+	Case_Age__c, 
+    Status,
+    Description,
+    Preferred_Case_Language__c,
+    Case_Preferred_Timezone__c,
+	Tier__c,
+	Entitlement_Type__c,
+	Category__c, 
+	Product__c, 
+	Subject, 
+	First_Response_Complete__c, 
+	CreatedDate,
+	Plan_of_Action_Status__c, 
+	Case_Owner_Name__c,
+    AccountId,
+    IsEscalated, Escalated_Case__c,
+    ClosedDate, IsClosed, isClosedText__c, 
+    Account.Name,
+    Account.CSM_Name__c,
+    Account.CSM_Email__c
+FROM Case 
+WHERE
+	CaseNumber=
+" -replace "`n", " "

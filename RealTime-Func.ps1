@@ -3,6 +3,19 @@ $SMTPPort = 25
 $From = 'AngelNotification@TableauSoftware.com'
 
 
+function get-case {
+    param($case_number)
+
+    $Query = $case_query + "'" + $case_number + "'"
+
+    $Query
+
+    $json_result = (sfdx force:data:soql:query -q $Query -u vscodeOrg --json)
+
+    return ($json_result | ConvertFrom-Json).result.records
+}
+
+
 function get-all {
     Param($Query)
     Do {

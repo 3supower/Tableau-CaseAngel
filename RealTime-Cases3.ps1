@@ -339,10 +339,10 @@ function update_sheet {
         # Hide cases if fresh P3 and P4
         # Write-Host $sheet.Name
         <##>
-        if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Korean" -or $sheet.Name -match "Chinese" -or $sheet.Name -match "Unassigned" -or $sheet.Name -match "Aged P3P4") `
+        if ( ($sheet.Name -match "Server" -or $sheet.Name -match "All" -or $sheet.Name -match "India" -or $sheet.Name -match "Unassigned" -or $sheet.Name -match "Aged P3P4") `
                 -and ($row.Entitlement_Type__c -match "Standard") `
                 -and ($row.Priority -eq "P3" -or $row.Priority -eq "P4") `
-                -and ($row.Case_Age__c -lt 150) `
+                -and ($row.Case_Age__c -lt 20) `
                 -and ($row.Case_Owner_Name__c -eq $null) ) {
             $sheet.Rows($i).Hidden = $true
         }
@@ -402,7 +402,7 @@ function Run-MainLoop {
     $hyperroot = "https://tableau.my.salesforce.com/"
 
     # Timeout for restarting Excel
-    $timeout = New-TimeSpan -Hours 2
+    $timeout = New-TimeSpan -Hours 10
     # $timeout = New-TimeSpan -Minutes 1
 
     while ($true) {
